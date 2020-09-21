@@ -1,0 +1,42 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.heart {
+    position:  fixed;
+    /* offscreen initially */
+    top:  -1vh;
+    font-size: 3rem;
+    transform: translateY(0);
+    /*
+    'animation' is short-hand for setting 8 different animation related-things:
+    Below we use:
+    animation-name:                 fall (the @keyframes name we define below)
+    animation-duration:             3s (three seconds)
+    animation-timing-function:      linear
+    animation-delay:                null
+    animation-iteration-count:      null
+    animation-direction:            forwards
+    animation-fill-mode:            null
+    animation-play-state:           null
+     */
+    animation:  fall 3s linear forwards;
+}
+
+/* our custom animation, used with 'animation-name' value of 'animation' */
+@keyframes fall {
+    to {
+        transform:  translateY(105vh);
+    }
+
+}
