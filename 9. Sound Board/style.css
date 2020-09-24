@@ -1,0 +1,23 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: whitesmoke;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.btn {
+    background-color: rgb(169, 148, 190);
+    border-radius: 0.25em;
+    border: none;
+    margin: 1em;
+    color: white;
+    font-size: 1.25rem;
+    padding: 1.5em 3em;
+}
