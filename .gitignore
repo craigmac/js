@@ -2,3 +2,5 @@
 *.sublime-project
 .vscode/
 node_modules/
+*.code-workspace
+*.code-*
