@@ -4,23 +4,23 @@
 
 1. [Keys to Understand 'this'](#key-ideas)
 1. [Function invocation 'this'](#function-invocation)
-  1. [Issues](#function-this-issues)
-  1. [Fixes to get desired 'this' context](#function-this-fixes)
+    1. [Issues](#function-this-issues)
+    1. [Fixes to get desired 'this' context](#function-this-fixes)
 1. [Method invocation 'this'](#method-invocation)
-  1. [Issues](#method-this-issues)
-  1. [Fixes to get desired 'this' context](#method-this-fixes)
+    1. [Issues](#method-this-issues)
+    1. [Fixes to get desired 'this' context](#method-this-fixes)
 1. [Constructor invocation 'this'](#constructor-invocation)
-  1. [Issues](#constructor-this-issues)
-  1. [Fixes to get desired 'this' context](#constructor-this-fixes)
+    1. [Issues](#constructor-this-issues)
+    1. [Fixes to get desired 'this' context](#constructor-this-fixes)
 1. [Indirect Invocation 'this'](#indirect-invocation)
-  1. [Issues](#indirect-this-issues)
-  1. [Fixes to get desired 'this' context](#indirect-this-fixes)
+    1. [Issues](#indirect-this-issues)
+    1. [Fixes to get desired 'this' context](#indirect-this-fixes)
 1. [Bound Function 'this'](#bound-invocation)
-  1. [Issues](#bound-this-issues)
-  1. [Fixes to get desired 'this' context](#bound-this-fixes)
+    1. [Issues](#bound-this-issues)
+    1. [Fixes to get desired 'this' context](#bound-this-fixes)
 1. [Arrow Function 'this'](#arrow-invocation)
-  1. [Issues](#arrow-this-issues)
-  1. [Fixes to get desired 'this' context](#arrow-this-fixes)
+    1. [Issues](#arrow-this-issues)
+    1. [Fixes to get desired 'this' context](#arrow-this-fixes)
 
 ## Keys to Understanding 'this' <a name='key-ideas'></a>
 
@@ -99,6 +99,7 @@ Annoying tidbit: both non-strict and strict mode can be mixed in a single
 file, so one fn declared local strict mode and another fn may be non-strict.
 
 Examples:
+
 ```javascript
 const numbers = {
   numberA: 5,
@@ -134,6 +135,7 @@ numbers.sum()
 ```
 
 ### Fixes <a name='function-this-fixes'></a>
+
 How do we get above to return desired result '15'?
 the .calculate() fn we invoke must exectue with the same context as
 the sum() method, i.e., have the context of 'numbers' object, in order
@@ -170,7 +172,6 @@ function binds 'this' lexically'.**
 
 The result? it just uses the context of the sum() method, aka 'this' will
 be 'sum' which has access to 'numbers' object.
-
 
 ```javascript
 const numbers = {
@@ -284,6 +285,7 @@ invocation happens, and 'this' will be 'window' or 'undefined' in strict
 mode**.
 
 Example:
+
 ```javascript
 function Pet(type, legs) {
   this.type = type
@@ -294,7 +296,6 @@ function Pet(type, legs) {
     console.log(`The ${this.type} has ${this.legs} legs`)
   }
 }
-
 
 const myCat = new Pet('Cat', 4)
 // Below returns:
@@ -354,18 +355,25 @@ setTimeout(myCat.logInfo, 1000)
 ```
 
 ## Constructor invocation 'this' <a name='constructor-invocation'></a>
+
 ### Issues <a name='-this-issues'></a>
+
 ### Fixes <a name='-this-fixes'></a>
 
 ## Indirect Invocation 'this' <a name='indirect-invocation'></a>
+
 ### Issues <a name='-this-issues'></a>
+
 ### Fixes <a name='-this-fixes'></a>
 
 ## Bound Function 'this' <a name='bound-invocation'></a>
+
 ### Issues <a name='-this-issues'></a>
+
 ### Fixes <a name='-this-fixes'></a>
 
 ## Arrow Function 'this' <a name='arrow-invocation'></a>
-### Issues <a name='-this-issues'></a>
-### Fixes <a name='-this-fixes'></a>
 
+### Issues <a name='-this-issues'></a>
+
+### Fixes <a name='-this-fixes'></a>
