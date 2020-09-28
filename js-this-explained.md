@@ -13,8 +13,6 @@
     1. [Issues](#constructor-this-issues)
     1. [Fixes to get desired 'this' context](#constructor-this-fixes)
 1. [Indirect Invocation 'this'](#indirect-invocation)
-    1. [Issues](#indirect-this-issues)
-    1. [Fixes to get desired 'this' context](#indirect-this-fixes)
 1. [Bound Function 'this'](#bound-invocation)
     1. [Issues](#bound-this-issues)
     1. [Fixes to get desired 'this' context](#bound-this-fixes)
@@ -23,6 +21,12 @@
     1. [Fixes to get desired 'this' context](#arrow-this-fixes)
 
 ## Keys to Understanding 'this' <a name='key-ideas'></a>
+
+Ask yourself these questions to figure out the context ('this'):
+
+1. **Don't ask** where is `this` taken from? **Ask** how is the function
+invoked? (remember 'call site')
+1. For arrow functions ask: what is `this` where the arrow function is defined?
 
 Most important point:
 
@@ -356,24 +360,307 @@ setTimeout(myCat.logInfo, 1000)
 
 ## Constructor invocation 'this' <a name='constructor-invocation'></a>
 
+In a constructor invocation, e.g., `new Foo()` **'this' is the newly created
+object**
+
+Example:
+
+```javascript
+function Foo () {
+  this.property = 'Default Value'
+}
+
+const fooInstance = new Foo()
+fooInstance.property // => 'Default Value'
+```
+
+Same thing happens when using `class` syntax, just that the initialization
+happens in the `constructor` method.
+
+```javascript
+class Bar {
+  constructor () {
+    this.property = 'Default Value'
+  }
+}
+
+const barInstance = new Bar()
+barInstance.property // => 'Default Value'
+```
+
 ### Issues <a name='-this-issues'></a>
 
+Some Js fns create instances not **only** when invoked with constructors, but
+also when invoked as functions.
+
+Example:
+
+```javascript
+const reg1 = new RegExp('\\w+')
+const reg2 = new RegExp('\\w+')
+
+// using instanceof js function to check class
+// when doing 'new Regexp' and just 'RegExp' js creates equivalent reg ex objects
+reg1 instanceof RegExp // true
+reg2 instanceof RegExp // true
+reg1.source == reg2.source // true
+```
+
+The problem: some constructors may omit the logic to init the object when `new`
+keyword is missing, so using function invocation to create objects is risky.
+
+Example:
+
+```javascript
+function Vehicle (type, wheelsCount) {
+  this.type = type
+  this.wheelsCount = wheelsCount
+  return this
+}
+
+// Fn invocation issue, no 'new' keyword used
+const car = Vehicle('Car', 4)
+car.type // 'Car'
+car.wheelsCount // 4
+car === window // true! 'this' is window not Vehicle context
+```
+
 ### Fixes <a name='-this-fixes'></a>
+
+**Make sure to use new operator in cases when a constructor call is expected**
+
+Example:
+
+```javascript
+function Vehicle (type, wheelsCount) {
+  // Do this to prevent wrong invocation without 'new' keyword
+  if (!(this instanceof Vehicle)) {
+    throw Error('Error: Incorrect invocation')
+  }
+  this.type = type
+  this.wheelsCount = wheelsCount
+  return this
+}
+
+// Constructor invocation
+const car = new Vehicle('Car', 4)
+car.type // 'Car'
+car.wheelsCount // 4
+car instanceof Vehicle // true
+
+// Fn invocation, throws an error as expected bc no 'new' used
+const brokenCar = Vehicle('Broken Car', 3)
+```
 
 ## Indirect Invocation 'this' <a name='indirect-invocation'></a>
 
-### Issues <a name='-this-issues'></a>
+Indirect invocation: performed when a fn is called using `Foo.call()` or
+`Foo.apply()` methods.
 
-### Fixes <a name='-this-fixes'></a>
+Functions are objects. The type of the object is `Function`.
+
+1. `.call(thisArg, arg, arg2, ...)` method: First arg is the context to use
+for `this` and then followed by an optional list of arguments to be passed to
+the called fn.
+1. `.apply(thisArg, [ arg, arg2, ...])` method: `this` context is the first arg
+like call() and the rest of the args are an array-like object of arguments.
+
+Example indirect invocation:
+
+```javascript
+function increment (number) {
+  return ++number
+}
+
+// You can use either one, apply uses array-like arg though
+// here we don't give a defined 'this' context
+increment.call(undefined, 10) // 11
+increment.apply(undefined, [10]) // 11
+
+
+// passing context for 'this' to indirect invocation
+const rabbit = { name: 'White Rabbit' }
+
+function concatName (string) {
+  console.log(this === rabbit) // true
+  return string + this.name
+}
+
+// indirect invocations
+concatName.call(rabbit, 'Hello ') // 'Hello White Rabbit'
+concatName.apply(rabbit, ['Bye ']) // 'Bye White Rabbit'
+
+// creating pre-es6 class using functions
+function Runner (name) {
+  console.log(this instanceof Rabbit) // true
+  this.name = name // actually sets Rabbit.name here, so it's like super() call
+}
+
+function Rabbit (name, countLegs) {
+  console.log(this instanceof Rabbit) // true
+  Runner.call(this, name)
+  this.countLegs = countLegs
+}
+
+const myRabbit = new Rabbit('White Rabbit', 4)
+myRabbit // {name: 'White Rabbit', countLegs: 4}
+```
 
 ## Bound Function 'this' <a name='bound-invocation'></a>
 
+**A function whose context (this) and/or args are bound to specific values.**
+
+Example of creating a bound fn and later invoking it:
+
+```javascript
+function multiply (number) {
+  'use strict'
+  return this * number
+}
+
+// create bound fn with context where number arg is always 2, so it's like
+// creating a generator in Python. Unlike apply and call, bind does not invoke
+// right away, it returns a fn to be called later with a predefined context
+const double = multiply.bind(2)
+double(3) // 6
+double(10) // 20
+// multiply and double have the same code and scope
+```
+
+**'this' is the first argument of bind() when invoking a bound function.**
+
+bind() creates a new function and returns it, that when invoked will have as
+the context the first argument passed to bind() when called. This allows us
+to create a function with a permamently bound `this` value.
+
+Example of bound `this`:
+
+```javascript
+const numbers = {
+  array: [3, 5, 10],
+
+  getNumbers () {
+    return this.array
+  }
+}
+
+
+// create bound `this` using .bind()
+const boundGetNumbers = numbers.getNumbers.bind(numbers)
+boundGetNumbers() // [3, 5, 10]
+
+// If we extract the method and call it, the context is gone
+const simpleGetNumbers = numbers.getNumbers
+simpleGetNumbers() // 'undefined' or TypeError in strict mode
+```
+
 ### Issues <a name='-this-issues'></a>
 
-### Fixes <a name='-this-fixes'></a>
+Not really an issue, as it works as intended, but just know that
+once bound with .bind() you cannot call it with a different context using
+.apply/.call methods, it will always use the originally bound context.
+
+Example:
+
+```javascript
+function getThis () {
+  'use strict' // throws TypeError if 'this' undefined
+  return this
+}
+
+
+const one = getThis.bind(1) // bind getThis context (this) to '1'
+
+one() // 1
+one.call(2) // 1
+one.appy(2) // 1
+one.bind(2)() // 1
+
+// Only this one change already bound fn context! Unusual to do this though
+new one() // => Object
+```
 
 ## Arrow Function 'this' <a name='arrow-invocation'></a>
 
+**Designed for shorter fn declaration syntax and lexically bind the context, aka
+'this' is the enclosing context where the arrow fn is defined**
+
+Takes `this` value from outer fn where it is defined, aka binds `this`
+lexically, in computer science terms.
+
+Example showing context transparency property of arrow functions:
+
+```javascript
+class Point {
+  constructor (x, y) {
+    this.x = x
+    this.y = y
+  }
+
+  log () {
+    console.log(this === myPoint) // true
+
+    // calls arrow fn with same ctx (myPoint object) as the log method above,
+    // could be thought of as inheriting the context.
+    setTimeout(() => {
+      console.log(this === myPoint) // true
+      console.log(this.x + ':' + this.y) // e.g., 93:138
+    }, 1000)
+  }
+}
+
+const myPoint = new Point(95, 165)
+myPoint.log()
+```
+
+An arrow fn is bound lexically **once and forever, the 'this' cannot be modified
+even when using .call/.apply/.bind methods that usually modify the contex**
+
 ### Issues <a name='-this-issues'></a>
 
+**You may want to use arrow fn to declare methods on object. However, doing this
+will give the method the global context!!!**
+
+Example defines a method on a class using an arrow fn:
+
+```javascript
+function Period (hours, minutes) {
+  this.hours = hours
+  this.minutes = minutes
+}
+
+// Create method on the Period 'class' (without using ES6 syntax aka old way)
+Period.prototype.format = () => {
+  console.log(this === window) // true
+  return this.hours + ' hours and ' + this.minutes + ' minutes'
+}
+
+const walkPeriod = new Period(2, 30)
+walkPeriod.format() // => 'undefined hours and undefined minutes'
+```
+
+**Arrow fn has a static ctx that doesn't change on different invocation types.**
+
 ### Fixes <a name='-this-fixes'></a>
+
+The way to fix using an arrow fn to define a method on an object (the context
+will be bound to 'global', see above), is to use a function expression!
+
+Example of using Function Expression syntax to fix `this` issue of defining
+methods using arrow functions:
+
+```javascript
+function Period (hours, minutes) {
+  this.hours = hours
+  this.minutes = minutes
+}
+
+// use function expression here instead of arrow fn
+Period.prototype.format = function () {
+  console.log(this === walkPeriod) // true
+  return this.hours + ' hours and ' + this.minutes + ' minutes'
+}
+
+const walkPeriod = new Period(2, 30)
+walkPeriod.format() // => '2 hours and 30 minutes'
+```
